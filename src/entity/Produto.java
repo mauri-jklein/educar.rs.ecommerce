@@ -18,6 +18,13 @@ public class Produto {
 
     public Produto() {
     }
+
+    public Produto(String nome, String descricao, Double preco, int estoque) {
+        this.nome = nome;
+        this.descricao = descricao;
+        this.preco = preco;
+        this.estoque = estoque;
+    }
     
     public Produto(int id, String nome, String descricao, Double preco, int estoque) {
         this.id = id;
@@ -66,6 +73,12 @@ public class Produto {
     public void setEstoque(int estoque) {
         this.estoque = estoque;
     }
+
+    @Override
+    public String toString() {
+        return "Produto{" + "id=" + id + ", nome=" + nome + ", descricao=" + descricao + ", preco=" + preco + ", estoque=" + estoque + '}';
+    }
+    
     
     
     

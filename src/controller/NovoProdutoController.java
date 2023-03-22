@@ -15,12 +15,24 @@ import service.ProdutoService;
  */
 public class NovoProdutoController extends javax.swing.JFrame {
 
+    private Produto produto = new Produto();
+    int linha = 0;
+
     /**
      * Creates new form NovoProdutoController
      */
     public NovoProdutoController() {
         initComponents();
         this.setLocationRelativeTo(null);
+    }
+
+    public NovoProdutoController(Produto produto, int linha) {
+        this.produto = produto;
+        this.linha = linha;
+        initComponents();
+        this.setLocationRelativeTo(null);
+        jbSalvar.setText("Editar");
+        preencherCampos(produto);
     }
 
     /**
@@ -160,21 +172,35 @@ public class NovoProdutoController extends javax.swing.JFrame {
 
     private void jbSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSalvarActionPerformed
         // TODO add your handling code here:
-        Produto produto = new Produto();
-        ProdutoService produtoService = new ProdutoService();
         try {
-            produto.setNome(jtfNomeProduto.getText());
-            produto.setDescricao(jtfDescricao.getText());
-            produto.setPreco(Double.parseDouble(jtfPreco.getText()));
-            produto.setEstoque(Integer.parseInt(jtfQuantidade.getText()));
+            ProdutoService produtoService = new ProdutoService();
+            this.produto = lerValoresDosCampos();
+            if (jbSalvar.getText().equals("Salvar")) {
+                produtoService.salvarProduto(this.produto);
+                this.dispose();
+            } else {
+                produtoService.editarProduto(this.produto);
+                this.dispose();
+            }
         } catch (IllegalArgumentException ex) {
             JOptionPane.showMessageDialog(null, "Você informou algum valor inválido");
         }
-        
-        produtoService.salvarProduto(produto);
-
-
     }//GEN-LAST:event_jbSalvarActionPerformed
+
+    private Produto lerValoresDosCampos() {
+        this.produto.setNome(jtfNomeProduto.getText());
+        this.produto.setDescricao(jtfDescricao.getText());
+        this.produto.setPreco(Double.parseDouble(jtfPreco.getText()));
+        this.produto.setEstoque(Integer.parseInt(jtfQuantidade.getText()));
+        return this.produto;
+    }
+
+    private void preencherCampos(Produto produto) {
+        jtfNomeProduto.setText(produto.getNome());
+        jtfDescricao.setText(produto.getDescricao());
+        jtfPreco.setText(produto.getPreco() + "");
+        jtfQuantidade.setText(produto.getEstoque() + "");
+    }
 
     /**
      * @param args the command line arguments
