@@ -35,8 +35,8 @@ create table item_pedido(
 );
 
 --inserindo clientes
-insert into cliente values(default, 'bruno klein', 'brunoklein@gmail.com', '1234', 'admin'); 
-insert into cliente values(default, 'mauri klein', 'maurijklein@gmail.com', '1234', 'usuario'); 
+insert into cliente values(default, 'bruno klein', 'brunoklein@gmail.com', '1234', 'ADMIN'); 
+insert into cliente values(default, 'mauri klein', 'maurijklein@gmail.com', '1234', 'CLIENTE'); 
 --inserindo produtos
 insert into produto values(default, 'mouse', 'mouse gamer exbom', 67.90, 10);
 insert into produto values(default, 'notebook', 'intel core i7 - 2.8 GHz', 5824.50, 10);
