@@ -22,7 +22,7 @@ create table cliente(
 create table pedido(
 	id serial primary key,
 	data date not null default CURRENT_DATE, 
-	valot_total decimal not null,
+	valor_total decimal not null,
 	id_cliente int references cliente
 );
 
@@ -40,6 +40,28 @@ insert into cliente values(default, 'mauri klein', 'maurijklein@gmail.com', '123
 --inserindo produtos
 insert into produto values(default, 'mouse', 'mouse gamer exbom', 67.90, 10);
 insert into produto values(default, 'notebook', 'intel core i7 - 2.8 GHz', 5824.50, 10);
+insert into produto values(default, 'notebook', 'intel core i7 - 2.2 GHz', 4600.00, 10);
+insert into produto values(default, 'notebook', 'intel core i5 - 2.8 GHz', 4999.50, 10);
+insert into produto values(default, 'notebook', 'intel core i5 - 2.2 GHz', 3989.50, 10);
+insert into produto values(default, 'notebook', 'intel core i3 - 1.6 GHz', 2899.50, 10);
+insert into produto values(default, 'monitor', 'intel 29 polegadas', 1560.50, 10);
+insert into produto values(default, 'monitor', 'amd 29 polegadas', 1560.50, 10);
+insert into produto values(default, 'monitor', 'lg 29 polegadas', 1560.50, 10);
+insert into produto values(default, 'monitor', 'samsung 29 polegadas', 1560.50, 10);
+insert into produto values(default, 'monitor', 'sony 29 polegadas', 1560.50, 10);
+insert into produto values(default, 'teclado', 'abnt brasil', 150.50, 10);
+insert into produto values(default, 'cartão de memória', '64 gb', 120.50, 10);
+insert into produto values(default, 'pen drive', '128 gb', 86.50, 10);
+insert into produto values(default, 'pen drive', '256 gb', 112, 10);
+insert into produto values(default, 'pen drive', '512 gb', 156.50, 10);
+insert into produto values(default, 'roteador', 'Roteador TP Link Mesh Gigabit Wi-Fi 5GHz Archer C6', 305.50, 10);
+insert into produto values(default, 'roteador', 'Roteador Wifi 6 Gigabit Ax5400 Dual Band Archer Ax73', 1179.50, 10);
+insert into produto values(default, 'roteador', 'Roteador Fast Wi-Fi TP-Link Archer C60, Wireless Dual Band 2.4/5 GHz', 185.50, 10);
+insert into produto values(default, 'roteador', 'Roteador Wireless TP-Link Dual Band 2.4GHz 5GHz', 450.50, 10);
+insert into produto values(default, 'tv', 'Smart TV 50” Crystal 4K Samsung 50AU7700', 2550.50, 10);
+insert into produto values(default, 'tv', 'Smart Tv 50 Hq 4k Design Slim Wi-fi 3 Hdmi 2 Usb Android 11', 2299.50, 10);
+insert into produto values(default, 'tv', 'Smart TV 55" LG 4K 55UQ7950PSB WiFi, Bluetooth', 2899.50, 10);
+
 --inserindo pedido
 insert into pedido values(default, default, 5067.89, 1);
 insert into pedido values(default, default, 4999.99, 2);
