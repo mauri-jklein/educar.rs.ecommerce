@@ -25,11 +25,12 @@ public class ProdutoRepository {
     Connection conn;
     PreparedStatement ppst;
 
-    public List<Produto> buscarProdutos() {
+    public List<Produto> buscarProdutos(int pagina) {
         try {
-            String sql = "SELECT * FROM produto order by nome";
+            String sql = "SELECT * FROM produto order by nome limit 20 offset ?";
             conn = util.conexao();
             ppst = conn.prepareStatement(sql);
+            ppst.setInt(1, pagina*20);
             ResultSet rs = ppst.executeQuery();
             List<Produto> produtos = new ArrayList<>();
             while (rs.next()) {
@@ -98,8 +99,6 @@ public class ProdutoRepository {
             ppst.setDouble(3, produto.getPreco());
             ppst.setInt(4, produto.getEstoque());
             ppst.setInt(5, produto.getId());
-            System.out.println(produto);
-            System.out.println(sql);
             ppst.executeUpdate();
             ppst.close();
             conn.close();
@@ -122,6 +121,24 @@ public class ProdutoRepository {
             JOptionPane.showMessageDialog(null, ex);
         }
         return null;
+    }
+
+    public void atualizarEstoque(int id, int quantidade) {
+        conn = util.conexao();
+        String sql = "UPDATE produto SET estoque = "
+                + "((select estoque from produto where id = ?)-?)"
+                + "WHERE id = ?";
+        try {
+            ppst = conn.prepareStatement(sql);
+            ppst.setInt(1, id);
+            ppst.setInt(2, quantidade);
+            ppst.setInt(3, id);
+            ppst.executeUpdate();
+            ppst.close();
+            conn.close();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
     }
 
 }
