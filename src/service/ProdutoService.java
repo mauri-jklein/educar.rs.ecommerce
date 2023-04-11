@@ -17,8 +17,8 @@ public class ProdutoService {
 
     private final ProdutoRepository produtoRepository = new ProdutoRepository();
 
-    public List<Produto> buscarProdutos() {
-        return produtoRepository.buscarProdutos();
+    public List<Produto> buscarProdutos(int pagina) {
+        return produtoRepository.buscarProdutos(pagina);
     }
 
     public Produto salvarProduto(Produto produto) {
