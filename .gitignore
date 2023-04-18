@@ -1,2 +1,11 @@
 #ignorando a classe util.java
 Util.java
+
+#ignorando o Arquivo
+.gitignore
+
+#ignorando a pasta build
+build
+
+#ignorando a pasta dist
+dist
