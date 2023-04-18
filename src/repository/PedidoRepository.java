@@ -7,10 +7,12 @@ package repository;
 
 import entity.Cliente;
 import entity.Pedido;
+import entity.Produto;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import javax.swing.JOptionPane;
 import org.postgresql.util.PSQLException;
 import resources.Util;
@@ -48,5 +50,21 @@ public class PedidoRepository {
         }
         return pedido;
     }
-
+    
+     public Pedido buscarPedido(int id) {
+        try {
+            String sql = "SELECT * FROM pedido where id = ?";
+            conn = util.conexao();
+            ppst = conn.prepareStatement(sql);
+            ppst.setInt(1, id);
+            ResultSet rs = ppst.executeQuery();
+            while (rs.next()) {
+                return new Pedido(rs.getInt(1), LocalDate.parse(rs.getString(2)),
+                        rs.getDouble(3), new Cliente(rs.getInt(4)), null);
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Não foi possível consultar o banco.");
+        }
+        return null;
+    }
 }

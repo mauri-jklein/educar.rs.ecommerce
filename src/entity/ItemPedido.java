@@ -13,13 +13,13 @@ public class ItemPedido {
 
     public ItemPedido() {
     }
-   
+
     public ItemPedido(Double valor, int quantidade, Produto produto) {
         this.valor = valor;
         this.quantidade = quantidade;
         this.produto = produto;
     }
-    
+   
     public ItemPedido(int id, Double valor, int quantidade, Produto produto) {
         this.id = id;
         this.valor = valor;

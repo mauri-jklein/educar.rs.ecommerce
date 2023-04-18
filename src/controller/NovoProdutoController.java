@@ -25,6 +25,8 @@ public class NovoProdutoController extends javax.swing.JFrame {
         initComponents();
         this.setLocationRelativeTo(null);
     }
+    
+    
 
     public NovoProdutoController(Produto produto, int linha) {
         this.produto = produto;

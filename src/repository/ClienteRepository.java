@@ -6,12 +6,14 @@
 package repository;
 
 import entity.Cliente;
+import entity.Pedido;
 import entity.Produto;
 import entity.TipoUsuario;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +30,7 @@ public class ClienteRepository {
     private final Util util = new Util();
     Connection conn;
     PreparedStatement ppst;
-    
+
     public Cliente validarLogin(Cliente cliente) {
         try {
             String sql = "SELECT * FROM cliente where email = ? and senha = ?";
@@ -38,7 +40,7 @@ public class ClienteRepository {
             ppst.setString(2, cliente.getSenha());
             ResultSet rs = ppst.executeQuery();
             while (rs.next()) {
-                return new Cliente(rs.getInt(1), rs.getString(2), rs.getString(3), 
+                return new Cliente(rs.getInt(1), rs.getString(2), rs.getString(3),
                         rs.getString(4), TipoUsuario.valueOf(rs.getString(5)));
             }
         } catch (SQLException ex) {
@@ -46,8 +48,7 @@ public class ClienteRepository {
         }
         return null;
     }
-    
-    
+
     public Cliente salvarCliente(Cliente cliente) {
         conn = util.conexao();
         String sql = "INSERT INTO cliente("
@@ -66,11 +67,30 @@ public class ClienteRepository {
             ppst.executeUpdate();
             ppst.close();
             conn.close();
-        } catch (PSQLException ex){
+        } catch (PSQLException ex) {
             JOptionPane.showMessageDialog(null, "Já existe um cliente com este email cadastrado");
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, ex);
         }
         return null;
     }
+
+    public Cliente buscarCliente(int id) {
+        try {
+            String sql = "SELECT * FROM cliente where id = ?";
+            conn = util.conexao();
+            ppst = conn.prepareStatement(sql);
+            ppst.setInt(1, id);
+            ResultSet rs = ppst.executeQuery();
+            while (rs.next()) {
+                return new Cliente(rs.getInt(1), rs.getString(2),
+                        rs.getString(3), rs.getString(4), TipoUsuario.valueOf(rs.getString(5)));
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Não foi possível consultar o banco.");
+        }
+        return null;
+    }
+
+
 }

@@ -6,6 +6,7 @@
 package controller;
 
 import entity.Cliente;
+import entity.ItemPedido;
 import entity.Pedido;
 import entity.Produto;
 import java.text.DecimalFormat;
@@ -14,6 +15,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
+import service.PedidoService;
 import service.ProdutoService;
 
 /**
@@ -33,24 +35,25 @@ public class ProdutoController extends javax.swing.JFrame {
         this.setLocationRelativeTo(null);
         desabilitarOpcoesCliente();
         configurarLarguraColunas();
-        preencheTabela(produtoService.buscarProdutos());
+        preencheTabela(produtoService.buscarProdutos(0));
     }
 
     public ProdutoController(Cliente cliente) {
         initComponents();
         this.setLocationRelativeTo(null);
         this.cliente = cliente;
-        this.pedido = pedido;
         desabilitarOpcoesAdmin();
         configurarLarguraColunas();
-        preencheTabela(produtoService.buscarProdutos());
+        preencheTabela(produtoService.buscarProdutos(0));
+        //Instruções relacionadas ao carrinho de compras;
+        this.pedido = new Pedido();
+        this.pedido.setCliente(this.cliente);
     }
 
     private void desabilitarOpcoesAdmin() {
         jbNovo.setVisible(false);
         jbEditar.setVisible(false);
         jbExcluir.setVisible(false);
-        jbLocalizar.setVisible(false);
     }
 
     private void desabilitarOpcoesCliente() {
@@ -110,14 +113,33 @@ public class ProdutoController extends javax.swing.JFrame {
 
     private Produto lerDadosDaLinhaSelecionada() {
         int linha = jtListaProdutos.getSelectedRow();
+        System.out.println(Double.parseDouble(jtListaProdutos.getValueAt(linha, 3).toString().replace(".", "").replace(",", ".").substring(3, jtListaProdutos.getValueAt(linha, 3).toString().length() - 1)));
         Produto produto = new Produto(
                 Integer.parseInt(jtListaProdutos.getValueAt(linha, 0).toString()),
                 jtListaProdutos.getValueAt(linha, 1).toString(),
                 jtListaProdutos.getValueAt(linha, 2).toString(),
-                Double.parseDouble(
-                        jtListaProdutos.getValueAt(linha, 3).toString().replace(".", "").replace(",", ".").substring(3, jtListaProdutos.getValueAt(linha, 3).toString().length() - 2)),
+                Double.parseDouble(jtListaProdutos.getValueAt(linha, 3).toString().replace(".", "").replace(",", ".").substring(3, jtListaProdutos.getValueAt(linha, 3).toString().length() - 1)),
                 Integer.parseInt(jtListaProdutos.getValueAt(linha, 4).toString()));
         return produto;
+    }
+
+    private int ObterQuantidadeDoItem() {
+        if ((jtListaProdutos.getSelectedRow() < 0)
+                || (jtListaProdutos.getValueAt(jtListaProdutos.getSelectedRow(), 0) == null)) {
+            JOptionPane.showMessageDialog(null, "Você precisa selecionar "
+                    + "um Produto para Adicionar");
+            return 0;
+        } else {
+            return Integer.parseInt(JOptionPane.showInputDialog("Informe quantas unidades do "
+                    + "produto deseja adicionar ao Pedido"));
+        }
+    }
+
+    private boolean verificarEstoque(Produto produto, int quantidade) {
+        if ((quantidade > 0) && (produto.getEstoque() >= quantidade)) {
+            return true;
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")
@@ -139,6 +161,11 @@ public class ProdutoController extends javax.swing.JFrame {
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
+        jMenu3 = new javax.swing.JMenu();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        jMenuItem3 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -149,16 +176,6 @@ public class ProdutoController extends javax.swing.JFrame {
         jtListaProdutos.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jtListaProdutos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
-                {null, null, null, null, null},
                 {null, null, null, null, null},
                 {null, null, null, null, null},
                 {null, null, null, null, null},
@@ -277,6 +294,35 @@ public class ProdutoController extends javax.swing.JFrame {
         jMenu2.setText("Editar");
         jMenuBar1.add(jMenu2);
 
+        jMenu3.setText("Pedido");
+
+        jMenuItem2.setText("Ver Carrinho");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem2);
+
+        jMenuItem1.setText("Finalizar Pedido");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem1);
+        jMenu3.add(jSeparator1);
+
+        jMenuItem3.setText("Localizar Pedido (Histórico)");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem3);
+
+        jMenuBar1.add(jMenu3);
+
         setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -292,7 +338,7 @@ public class ProdutoController extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(jbPaginaAnterior)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jlPagina, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jlPagina, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jbProximaPagina))
                     .addGroup(layout.createSequentialGroup()
@@ -351,22 +397,35 @@ public class ProdutoController extends javax.swing.JFrame {
     }//GEN-LAST:event_jbNovoActionPerformed
 
     private void jbProximaPaginaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbProximaPaginaActionPerformed
-        // TODO add your handling code here:
-        jlPagina.setText((Integer.parseInt(jlPagina.getText()) + 1) + "");
+        List<Produto> produtos = produtoService.buscarProdutos(Integer.parseInt(jlPagina.getText()));
+        if (!produtos.isEmpty()) {
+            limparTabela();
+            preencheTabela(produtos);
+            jlPagina.setText(
+                    (Integer.parseInt(jlPagina.getText()) + 1) + "");
+        }
     }//GEN-LAST:event_jbProximaPaginaActionPerformed
-
     private void jbPaginaAnteriorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbPaginaAnteriorActionPerformed
-        // TODO add your handling code here:
         if (!jlPagina.getText().equals("1")) {
-            jlPagina.setText((Integer.parseInt(jlPagina.getText()) - 1) + "");
+            int pagina = (Integer.parseInt(jlPagina.getText()) - 1);
+            limparTabela();
+            preencheTabela(produtoService.buscarProdutos(pagina - 1));
+            jlPagina.setText(pagina + "");
         }
     }//GEN-LAST:event_jbPaginaAnteriorActionPerformed
 
     private void jbComprarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbComprarActionPerformed
         // TODO add your handling code here:
-        Pedido pedido = new Pedido();
-        int i = 1;
-        jbComprar.setText("Comprar (" + i + ")");
+        int quantidade = ObterQuantidadeDoItem();
+        Produto produto = lerDadosDaLinhaSelecionada();
+        if (verificarEstoque(produto, quantidade)) {
+            pedido.getItensPedido().add(new ItemPedido(quantidade * produto.getPreco(),
+                    quantidade, produto));
+            jbComprar.setText("Comprar(" + pedido.getItensPedido().size() + ")");
+        } else {
+            JOptionPane.showMessageDialog(null, "A quantidade indicada não está "
+                    + "no intervalo válido.");
+        }
     }//GEN-LAST:event_jbComprarActionPerformed
 
     private void jbLocalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbLocalizarActionPerformed
@@ -394,23 +453,59 @@ public class ProdutoController extends javax.swing.JFrame {
                 + lerDadosDaLinhaSelecionada()) == 0) {
             produtoService.excluirProduto(lerDadosDaLinhaSelecionada().getId());
             limparTabela();
-            preencheTabela(produtoService.buscarProdutos());
+            preencheTabela(produtoService.buscarProdutos(0));
         }
     }//GEN-LAST:event_jbExcluirActionPerformed
 
     private void jbListarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbListarActionPerformed
         // TODO add your handling code here:
         limparTabela();
-        preencheTabela(produtoService.buscarProdutos());
+        preencheTabela(produtoService.buscarProdutos(0));
     }//GEN-LAST:event_jbListarActionPerformed
+
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        PedidoService pedidoService = new PedidoService();
+        pedidoService.salvarPedido(pedido);
+        limparTabela();
+        preencheTabela(produtoService.buscarProdutos(0));
+        jbComprar.setText("Comprar");
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        // TODO add your handling code here:
+        new PedidoController(pedido).setVisible(true);
+
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        // TODO add your handling code here:
+        try {
+            int idPedido = Integer.parseInt(JOptionPane.showInputDialog("Informe o id do Pedido: "));
+            PedidoService pedidoService = new PedidoService();
+            pedido = pedidoService.buscarPedido(idPedido);
+            if(pedido.getCliente().getEmail().equals(this.cliente.getEmail())){
+                 new PedidoController(pedido).setVisible(true);
+            }else{
+                JOptionPane.showMessageDialog(null,"Não existe nenhum pedido seu com este ID!!!");
+            }
+        } catch (IllegalArgumentException ilex) {
+            JOptionPane.showMessageDialog(null,"Aconteceu algo de errado!!!"+ ilex);
+        }
+
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JButton jbComprar;
     private javax.swing.JButton jbEditar;
     private javax.swing.JButton jbExcluir;
