@@ -19,7 +19,7 @@ public class Util {
     private static final String url = "jdbc:postgresql://localhost:5432/ecommerce";
     private static final String driver = "org.postgresql.Driver";
     private static final String usuario = "postgres";
-    private static final String senha = "dhmeli";
+    private static final String senha = "xxxx";
     Connection c;
     
     public Connection conexao(){
