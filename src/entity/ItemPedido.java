@@ -7,9 +7,9 @@ package entity;
 
 public class ItemPedido {
     private int id;
+    private Produto produto;
     private Double valor;
     private int quantidade;
-    private Produto produto;
 
     public ItemPedido() {
     }

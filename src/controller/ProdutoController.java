@@ -9,6 +9,7 @@ import entity.Cliente;
 import entity.ItemPedido;
 import entity.Pedido;
 import entity.Produto;
+import entity.TipoUsuario;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,24 +31,21 @@ public class ProdutoController extends javax.swing.JFrame {
     private Cliente cliente;
     private Pedido pedido;
 
-    public ProdutoController() {
-        initComponents();
-        this.setLocationRelativeTo(null);
-        desabilitarOpcoesCliente();
-        configurarLarguraColunas();
-        preencheTabela(produtoService.buscarProdutos(0));
-    }
-
     public ProdutoController(Cliente cliente) {
         initComponents();
         this.setLocationRelativeTo(null);
         this.cliente = cliente;
-        desabilitarOpcoesAdmin();
         configurarLarguraColunas();
         preencheTabela(produtoService.buscarProdutos(0));
-        //Instruções relacionadas ao carrinho de compras;
-        this.pedido = new Pedido();
-        this.pedido.setCliente(this.cliente);
+
+        if (this.cliente.getTipo().equals(TipoUsuario.CLIENTE)) {
+            desabilitarOpcoesAdmin();
+            //Instruções relacionadas ao carrinho de compras;
+            this.pedido = new Pedido();
+            this.pedido.setCliente(this.cliente);
+        } else {
+            desabilitarOpcoesCliente();
+        }
     }
 
     private void desabilitarOpcoesAdmin() {
@@ -86,7 +84,7 @@ public class ProdutoController extends javax.swing.JFrame {
     }
 
     public void limparTabela() {
-        for (int i = 1; i < jtListaProdutos.getRowCount(); i++) {
+        for (int i = 0; i < jtListaProdutos.getRowCount(); i++) {
             jtListaProdutos.setValueAt(null, i, 0);
             jtListaProdutos.setValueAt(null, i, 1);
             jtListaProdutos.setValueAt(null, i, 2);
@@ -111,27 +109,31 @@ public class ProdutoController extends javax.swing.JFrame {
         jtListaProdutos.getColumnModel().getColumn(coluna).setCellRenderer(alinharDireita);
     }
 
+    private boolean linhaEstaSelecionada() {
+        return ((jtListaProdutos.getSelectedRow() >= 0)
+                && (jtListaProdutos.getValueAt(jtListaProdutos.getSelectedRow(), 0) != null));
+    }
+
     private Produto lerDadosDaLinhaSelecionada() {
         int linha = jtListaProdutos.getSelectedRow();
-        System.out.println(Double.parseDouble(jtListaProdutos.getValueAt(linha, 3).toString().replace(".", "").replace(",", ".").substring(3, jtListaProdutos.getValueAt(linha, 3).toString().length() - 1)));
         Produto produto = new Produto(
                 Integer.parseInt(jtListaProdutos.getValueAt(linha, 0).toString()),
                 jtListaProdutos.getValueAt(linha, 1).toString(),
                 jtListaProdutos.getValueAt(linha, 2).toString(),
-                Double.parseDouble(jtListaProdutos.getValueAt(linha, 3).toString().replace(".", "").replace(",", ".").substring(3, jtListaProdutos.getValueAt(linha, 3).toString().length() - 1)),
+                Double.parseDouble(jtListaProdutos.getValueAt(linha, 3).toString()
+                        .replace(".", "").replace(",", ".")
+                        .substring(3, jtListaProdutos.getValueAt(linha, 3).toString().length() - 1)),
                 Integer.parseInt(jtListaProdutos.getValueAt(linha, 4).toString()));
         return produto;
     }
 
     private int ObterQuantidadeDoItem() {
-        if ((jtListaProdutos.getSelectedRow() < 0)
-                || (jtListaProdutos.getValueAt(jtListaProdutos.getSelectedRow(), 0) == null)) {
-            JOptionPane.showMessageDialog(null, "Você precisa selecionar "
-                    + "um Produto para Adicionar");
-            return 0;
-        } else {
+        try {
             return Integer.parseInt(JOptionPane.showInputDialog("Informe quantas unidades do "
                     + "produto deseja adicionar ao Pedido"));
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Você precisa informar um número válido para indicar a quantidade do produto!");
+            return 0;
         }
     }
 
@@ -142,6 +144,67 @@ public class ProdutoController extends javax.swing.JFrame {
         return false;
     }
 
+    private int quantidadeNoPedido(int idProtudo) {
+        for (ItemPedido ip : pedido.getItensPedido()) {
+            if (ip.getProduto().getId() == idProtudo) {
+                return ip.getQuantidade();
+            }
+        }
+        return 0;
+    }
+
+    private void incrementaQuantidadeItem(Produto produto, int quantidade) {
+        if (verificarEstoque(produto, quantidade)) {
+            for (ItemPedido ip : pedido.getItensPedido()) {
+                if (ip.getProduto().getId() == produto.getId()) {
+                    ip.setQuantidade(quantidade);
+                    ip.setValor(ip.getProduto().getPreco() * quantidade);
+                    return;
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(null, "A quantidade indicada não está "
+                    + "no intervalo válido.");
+        }
+    }
+
+    private void adicionaNovoItem(Produto produto, int quantidade) {
+        if (verificarEstoque(produto, quantidade)) {
+            pedido.getItensPedido().add(new ItemPedido(quantidade * produto.getPreco(),
+                    quantidade, produto));
+            jbComprar.setText("Comprar(" + pedido.getItensPedido().size() + ")");
+        } else {
+            JOptionPane.showMessageDialog(null, "A quantidade indicada não está "
+                    + "no intervalo válido.");
+        }
+    }
+
+    private void buscarPorId() {
+        ProdutoService produtoService = new ProdutoService();
+        Produto produto = new Produto();
+        int id = Integer.parseInt(JOptionPane.showInputDialog("Informe o ID do Produto: "));
+        produto = produtoService.buscarProduto(id);
+        if (produto != null) {
+            limparTabela();
+            preencheTabela(produto, 0);
+        } else {
+            JOptionPane.showMessageDialog(null, "Nenhum Produto encontrado.");
+        }
+    }
+
+    private void buscarPorDescricao() {
+        List<Produto> produtos = new ArrayList<>();
+        ProdutoService produtoService = new ProdutoService();
+        String descricao = JOptionPane.showInputDialog("Pesquisar por:");
+        produtos = produtoService.buscarProdutosPorDescricao(descricao);
+        if (!produtos.isEmpty()) {
+            limparTabela();
+            preencheTabela(produtos);
+        } else {
+            JOptionPane.showMessageDialog(null, "Nenhum Produto encontrado.");
+        }
+    }
+    
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -162,10 +225,10 @@ public class ProdutoController extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
-        jMenuItem2 = new javax.swing.JMenuItem();
-        jMenuItem1 = new javax.swing.JMenuItem();
+        jmVerCarrinho = new javax.swing.JMenuItem();
+        jmFinalizarPedido = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
-        jMenuItem3 = new javax.swing.JMenuItem();
+        jmLocalizarPedido = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -296,30 +359,30 @@ public class ProdutoController extends javax.swing.JFrame {
 
         jMenu3.setText("Pedido");
 
-        jMenuItem2.setText("Ver Carrinho");
-        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+        jmVerCarrinho.setText("Ver Carrinho");
+        jmVerCarrinho.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem2ActionPerformed(evt);
+                jmVerCarrinhoActionPerformed(evt);
             }
         });
-        jMenu3.add(jMenuItem2);
+        jMenu3.add(jmVerCarrinho);
 
-        jMenuItem1.setText("Finalizar Pedido");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+        jmFinalizarPedido.setText("Finalizar Pedido");
+        jmFinalizarPedido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
+                jmFinalizarPedidoActionPerformed(evt);
             }
         });
-        jMenu3.add(jMenuItem1);
+        jMenu3.add(jmFinalizarPedido);
         jMenu3.add(jSeparator1);
 
-        jMenuItem3.setText("Localizar Pedido (Histórico)");
-        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+        jmLocalizarPedido.setText("Localizar Pedido (Histórico)");
+        jmLocalizarPedido.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem3ActionPerformed(evt);
+                jmLocalizarPedidoActionPerformed(evt);
             }
         });
-        jMenu3.add(jMenuItem3);
+        jMenu3.add(jmLocalizarPedido);
 
         jMenuBar1.add(jMenu3);
 
@@ -387,7 +450,7 @@ public class ProdutoController extends javax.swing.JFrame {
         if ((jtListaProdutos.getSelectedRow() < 0) || (jtListaProdutos.getValueAt(jtListaProdutos.getSelectedRow(), 0) == null)) {
             JOptionPane.showMessageDialog(null, "Você precisa selecionar um registro para Editar");
         } else {
-            new NovoProdutoController(lerDadosDaLinhaSelecionada(), jtListaProdutos.getSelectedRow()).setVisible(true);
+            new NovoProdutoController(lerDadosDaLinhaSelecionada()).setVisible(true);
         }
     }//GEN-LAST:event_jbEditarActionPerformed
 
@@ -415,33 +478,23 @@ public class ProdutoController extends javax.swing.JFrame {
     }//GEN-LAST:event_jbPaginaAnteriorActionPerformed
 
     private void jbComprarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbComprarActionPerformed
-        // TODO add your handling code here:
-        int quantidade = ObterQuantidadeDoItem();
-        Produto produto = lerDadosDaLinhaSelecionada();
-        if (verificarEstoque(produto, quantidade)) {
-            pedido.getItensPedido().add(new ItemPedido(quantidade * produto.getPreco(),
-                    quantidade, produto));
-            jbComprar.setText("Comprar(" + pedido.getItensPedido().size() + ")");
-        } else {
-            JOptionPane.showMessageDialog(null, "A quantidade indicada não está "
-                    + "no intervalo válido.");
+        if (linhaEstaSelecionada()) {
+            int quantidade = ObterQuantidadeDoItem();
+            Produto produto = lerDadosDaLinhaSelecionada();
+            int quantidadeNoPedido = quantidadeNoPedido(produto.getId());
+            if (quantidadeNoPedido != 0) {
+                incrementaQuantidadeItem(produto, quantidade + quantidadeNoPedido);
+            } else {
+                adicionaNovoItem(produto, quantidade);
+            }
         }
     }//GEN-LAST:event_jbComprarActionPerformed
 
     private void jbLocalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbLocalizarActionPerformed
-        // TODO add your handling code here:
-        try {
-            int id = Integer.parseInt(JOptionPane.showInputDialog("Informe o ID do Produto: "));
-            ProdutoService produtoService = new ProdutoService();
-            Produto produto = produtoService.buscarProduto(id);
-            if (produto != null) {
-                preencheTabela(produto, 0);
-                limparTabela();
-            } else {
-                JOptionPane.showMessageDialog(null, "Nenhum Produto encontrado com esse ID.");
-            }
-        } catch (Exception ex) {
-
+        if (this.cliente.getTipo().equals(TipoUsuario.ADMIN)) {
+            buscarPorId();
+        } else {
+            buscarPorDescricao();
         }
     }//GEN-LAST:event_jbLocalizarActionPerformed
 
@@ -461,38 +514,44 @@ public class ProdutoController extends javax.swing.JFrame {
         // TODO add your handling code here:
         limparTabela();
         preencheTabela(produtoService.buscarProdutos(0));
+        jlPagina.setText("1");
     }//GEN-LAST:event_jbListarActionPerformed
 
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        PedidoService pedidoService = new PedidoService();
-        pedidoService.salvarPedido(pedido);
-        limparTabela();
-        preencheTabela(produtoService.buscarProdutos(0));
-        jbComprar.setText("Comprar");
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    private void jmFinalizarPedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmFinalizarPedidoActionPerformed
+        if (pedido.getItensPedido().size() > 0) {
+            PedidoService pedidoService = new PedidoService();
+            pedidoService.salvarPedido(pedido);
+            limparTabela();
+            preencheTabela(produtoService.buscarProdutos(0));
+            jbComprar.setText("Comprar");
+        } else {
+            JOptionPane.showMessageDialog(null, "Você não tem produtos no carrinho.");
+        }
 
-    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+    }//GEN-LAST:event_jmFinalizarPedidoActionPerformed
+
+    private void jmVerCarrinhoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmVerCarrinhoActionPerformed
         // TODO add your handling code here:
         new PedidoController(pedido).setVisible(true);
 
-    }//GEN-LAST:event_jMenuItem2ActionPerformed
+    }//GEN-LAST:event_jmVerCarrinhoActionPerformed
 
-    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+    private void jmLocalizarPedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jmLocalizarPedidoActionPerformed
         // TODO add your handling code here:
         try {
             int idPedido = Integer.parseInt(JOptionPane.showInputDialog("Informe o id do Pedido: "));
             PedidoService pedidoService = new PedidoService();
             pedido = pedidoService.buscarPedido(idPedido);
-            if(pedido.getCliente().getEmail().equals(this.cliente.getEmail())){
-                 new PedidoController(pedido).setVisible(true);
-            }else{
-                JOptionPane.showMessageDialog(null,"Não existe nenhum pedido seu com este ID!!!");
+            if (pedido.getCliente().getEmail().equals(this.cliente.getEmail())) {
+                new PedidoController(pedido).setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(null, "Não existe nenhum pedido seu com este ID!!!");
             }
         } catch (IllegalArgumentException ilex) {
-            JOptionPane.showMessageDialog(null,"Aconteceu algo de errado!!!"+ ilex);
+            JOptionPane.showMessageDialog(null, "Aconteceu algo de errado!!!" + ilex);
         }
 
-    }//GEN-LAST:event_jMenuItem3ActionPerformed
+    }//GEN-LAST:event_jmLocalizarPedidoActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -501,9 +560,6 @@ public class ProdutoController extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JButton jbComprar;
@@ -515,6 +571,9 @@ public class ProdutoController extends javax.swing.JFrame {
     private javax.swing.JButton jbPaginaAnterior;
     private javax.swing.JButton jbProximaPagina;
     private javax.swing.JLabel jlPagina;
+    private javax.swing.JMenuItem jmFinalizarPedido;
+    private javax.swing.JMenuItem jmLocalizarPedido;
+    private javax.swing.JMenuItem jmVerCarrinho;
     private javax.swing.JTable jtListaProdutos;
     // End of variables declaration//GEN-END:variables
 }

@@ -218,10 +218,10 @@
                 </Property>
                 <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
                   <Table columnCount="4" rowCount="15">
-                    <Column editable="true" title="Nome" type="java.lang.String"/>
-                    <Column editable="true" title="Quantidade" type="java.lang.Integer"/>
-                    <Column editable="true" title="Pre&#xe7;o" type="java.lang.Double"/>
-                    <Column editable="true" title="Valor Total" type="java.lang.Double"/>
+                    <Column editable="false" title="Nome" type="java.lang.String"/>
+                    <Column editable="false" title="Quantidade" type="java.lang.Integer"/>
+                    <Column editable="false" title="Pre&#xe7;o" type="java.lang.Double"/>
+                    <Column editable="false" title="Valor Total" type="java.lang.Double"/>
                   </Table>
                 </Property>
               </Properties>

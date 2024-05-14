@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package controller;
 
 import entity.ItemPedido;
@@ -11,10 +6,6 @@ import entity.Produto;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- *
- * @author Mauri
- */
 public class PedidoController extends javax.swing.JFrame {
 
     public PedidoController(Pedido pedido) {
@@ -27,6 +18,13 @@ public class PedidoController extends javax.swing.JFrame {
         if (pedido.getId() == 0) {
             jtfCliente.setText(pedido.getCliente().getNome());
             jtfData.setText(LocalDate.now().toString());
+            
+            Double valorTotalPedido=0.0;
+            for(ItemPedido ip: pedido.getItensPedido()){
+                valorTotalPedido+=ip.getValor();
+            }
+            jtfValorTotalPedido.setText(valorTotalPedido+"");
+            
         } else {
             jtfId.setText(pedido.getId()+"");
             jtfCliente.setText(pedido.getCliente().getNome());
@@ -154,9 +152,16 @@ public class PedidoController extends javax.swing.JFrame {
             Class[] types = new Class [] {
                 java.lang.String.class, java.lang.Integer.class, java.lang.Double.class, java.lang.Double.class
             };
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false
+            };
 
             public Class getColumnClass(int columnIndex) {
                 return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
             }
         });
         jScrollPane2.setViewportView(jtItensPedido);

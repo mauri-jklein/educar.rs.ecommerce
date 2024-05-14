@@ -29,6 +29,10 @@ public class ProdutoService {
         return produtoRepository.buscarProduto(id);
     }
 
+     public List<Produto> buscarProdutosPorDescricao(String descricao) {
+        return produtoRepository.buscarProdutosPorDescricao(descricao);
+    }
+     
     public Produto editarProduto(Produto produto) {
         return produtoRepository.editarProduto(produto);
     }

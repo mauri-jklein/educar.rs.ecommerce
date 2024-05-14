@@ -30,7 +30,7 @@ public class ProdutoRepository {
             String sql = "SELECT * FROM produto order by nome limit 20 offset ?";
             conn = util.conexao();
             ppst = conn.prepareStatement(sql);
-            ppst.setInt(1, pagina*20);
+            ppst.setInt(1, pagina * 20);
             ResultSet rs = ppst.executeQuery();
             List<Produto> produtos = new ArrayList<>();
             while (rs.next()) {
@@ -85,8 +85,31 @@ public class ProdutoRepository {
         return null;
     }
 
+    public List<Produto> buscarProdutosPorDescricao(String descricao) {
+        try {
+            String sql = "select * from produto where nome like ? or descricao like ?";
+            conn = util.conexao();
+            ppst = conn.prepareStatement(sql);
+            ppst.setString(1, "%" + descricao + "%");
+            ppst.setString(2, "%" + descricao + "%");
+            ResultSet rs = ppst.executeQuery();
+            List<Produto> produtos = new ArrayList<>();
+            while (rs.next()) {
+                Produto produto = new Produto(rs.getInt(1), rs.getString(2), rs.getString(3), 
+                        rs.getDouble(4), rs.getInt(5));
+                produtos.add(produto);
+            }
+            return produtos;
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "Não foi possível consultar o banco." + ex);
+        }
+        return null;
+    }
+
     public Produto editarProduto(Produto produto) {
         conn = util.conexao();
+        System.out.println(produto);
+        
         String sql = "UPDATE produto SET nome = ?, "
                 + "descricao = ?, "
                 + "preco = ?, "
@@ -107,8 +130,8 @@ public class ProdutoRepository {
         }
         return null;
     }
-    
-     public Produto excluirProduto(int id) {
+
+    public Produto excluirProduto(int id) {
         conn = util.conexao();
         String sql = "DELETE FROM produto WHERE id = ?";
         try {

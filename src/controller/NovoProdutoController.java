@@ -15,8 +15,7 @@ import service.ProdutoService;
  */
 public class NovoProdutoController extends javax.swing.JFrame {
 
-    private Produto produto = new Produto();
-    int linha = 0;
+    Produto produto;
 
     /**
      * Creates new form NovoProdutoController
@@ -28,12 +27,13 @@ public class NovoProdutoController extends javax.swing.JFrame {
     
     
 
-    public NovoProdutoController(Produto produto, int linha) {
+    public NovoProdutoController(Produto produto) {
         this.produto = produto;
-        this.linha = linha;
         initComponents();
         this.setLocationRelativeTo(null);
+        
         jbSalvar.setText("Editar");
+        jlTitulo.setText("Editar Produto");
         preencherCampos(produto);
     }
 
@@ -46,7 +46,7 @@ public class NovoProdutoController extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        jlTitulo = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jtfNomeProduto = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
@@ -60,9 +60,9 @@ public class NovoProdutoController extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("NOVO PRODUTO");
+        jlTitulo.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jlTitulo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jlTitulo.setText("NOVO PRODUTO");
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
@@ -113,7 +113,7 @@ public class NovoProdutoController extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jlTitulo, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
@@ -142,7 +142,7 @@ public class NovoProdutoController extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
+                .addComponent(jlTitulo)
                 .addGap(28, 28, 28)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
@@ -174,6 +174,9 @@ public class NovoProdutoController extends javax.swing.JFrame {
 
     private void jbSalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jbSalvarActionPerformed
         // TODO add your handling code here:
+        Produto produto = new Produto();
+        produto.setId(this.produto.getId());
+        
         try {
             ProdutoService produtoService = new ProdutoService();
             this.produto = lerValoresDosCampos();
@@ -188,7 +191,6 @@ public class NovoProdutoController extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Você informou algum valor inválido");
         }
     }//GEN-LAST:event_jbSalvarActionPerformed
-
     private Produto lerValoresDosCampos() {
         this.produto.setNome(jtfNomeProduto.getText());
         this.produto.setDescricao(jtfDescricao.getText());
@@ -240,13 +242,13 @@ public class NovoProdutoController extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JButton jbCancelar;
     private javax.swing.JButton jbSalvar;
+    private javax.swing.JLabel jlTitulo;
     private javax.swing.JTextField jtfDescricao;
     private javax.swing.JTextField jtfNomeProduto;
     private javax.swing.JTextField jtfPreco;
